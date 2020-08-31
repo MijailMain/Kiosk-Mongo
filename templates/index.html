@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Kios-Data</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+<style>
+body {
+  background-color: rgb(182, 182, 182);
+}
+
+.header {
+  background-color: #ffffff;
+}
+.Titulos {
+  font-size: 1.5em;
+  margin-top: 10px;
+  font-weight: bold;
+}
+.Resultados {
+  font-size: 1em;
+  color: teal;
+  margin-left: 10px;
+}
+.length{
+    font-weight: bold;
+    color: rgb(172, 162, 21);
+}
+.buttonload {
+  background-color: #4CAF50; /* Green background */
+  border: none; /* Remove borders */
+  color: white; /* White text */
+  padding: 12px 24px; /* Some padding */
+  font-size: 16px; /* Set a font-size */
+  border-radius: 10px;
+}
+
+/* Add a right margin to each icon */
+.fa {
+  margin-left: -12px;
+  margin-right: 8px;
+}
+</style>
+
+</head>
+<body>
+
+    <div class="container-fluid">
+        <div class="row header">
+            <div class="col-sm-3"> <img src="https://i.pinimg.com/474x/b6/a8/5f/b6a85fff6da8f80f48c77740f9f50753.jpg" width="100%" height="100%"></div>
+            <div class="col-sm-3"><input type="text" class="form-control m-4" id="myText"  placeholder="Enter the Record id"> </div>
+            <div class="col-sm-3"> <div id="BotonSearchd">  <button type="submit" class="btn btn-danger m-4" onclick="myFunction(); BotonLoad()">Search</button></div><div class="length" id="registros"></div></div>
+            <div class="col-sm-3"> </div>
+        </div>
+        
+        <div class="row m-5">
+            <div class="col-sm-4">
+                 
+                <div id= Picture class="text-center">
+                    <img src="https://us.123rf.com/450wm/kritchanut/kritchanut1406/kritchanut140600114/29213224-hombre-foto-de-perfil-silueta-avatar.jpg?ver=6" width="75%" height="75%">
+                </div>
+            </div>
+            <div class="col-sm-8">
+                <div class="row Titulos">Age: <div id="Age" class="Resultados"> </div> </div>
+                <div class="row Titulos">Gender: <div id="Gender" class="Resultados"> </div> </div>
+                <div class="row Titulos">HasFever: <div id="HasFever" class="Resultados"> </div> </div>
+                <div class="row Titulos">HasMask: <div id="HasMask" class="Resultados"> </div> </div>
+                <div class="row Titulos">Temperature: <div id="Temperature" class="Resultados"> </div> </div>
+                <div class="row Titulos">TrackId: <div id="TrackId" class="Resultados"> </div> </div>
+                <div class="row Titulos">MessageTime: <div id="MessageTime" class="Resultados"> </div> </div>
+            </div>
+        </div>
+    </div>
+
+  
+
+
+</body>
+
+<script>
+
+
+    fetch('http://192.168.100.3:5080/aggregator/length/', {
+    method: 'GET'
+    })
+    .then(length=>length.json())
+    .then(length=>{
+    console.log(length)
+
+    // Frame Person detected
+    registros.innerHTML = '';
+    registros.innerHTML += `
+    Total Records: ${length.length - 1} 
+        `;
+    
+
+})
+
+function BotonLoad(){
+    BotonSearchd.innerHTML = '';
+    BotonSearchd.innerHTML += `
+     
+     <button type="submit" class="buttonload m-4" onclick="myFunction(); BotonLoad()">
+                <i class="fa fa-refresh fa-spin"></i>Loading
+              </button>
+    `;
+    
+}
+
+
+</script>
+
+<script>
+    function myFunction() {
+
+      console.log('data', document.getElementById("myText").value)
+      let Idrecord = document.getElementById("myText").value
+
+      fetch('http://192.168.100.3:5080/aggregator/data/'+ Idrecord, {
+        method: 'GET'
+         })
+        .then(Res=>Res.json())
+        .then(Res=>{
+        console.log(Res)
+
+        BotonSearchd.innerHTML = '';
+    BotonSearchd.innerHTML += `
+    <button type="submit" class="btn btn-danger m-4" onclick="myFunction(); BotonLoad()">Search</button>
+    `;
+        // Frame Person detected
+        Picture.innerHTML = '';
+        Picture.innerHTML += `
+            <img src="data:image/png;base64, ${Res.SensorData.ImageData}" width="60%" height="60%" alt="base64 test">
+        `;
+
+    // Frame Person detected
+    Age.innerHTML = '';
+    Age.innerHTML += `
+             ${Res.ImageDetectionResult.Results.FaceDetector.Detections[0].AgeGenderDetector.Age.toFixed(0)}
+        `;
+    // Frame Person detected
+    Gender.innerHTML = '';
+    Gender.innerHTML += `
+    ${Res.ImageDetectionResult.Results.FaceDetector.Detections[0].AgeGenderDetector.Gender}
+        `;
+    // Frame Person detected
+    HasFever.innerHTML = '';
+    let style  = "teal"
+    console.log (Res.SensorData.MessageData.HasFever)
+    if (Res.SensorData.MessageData.HasFever == true){
+        style = "red"
+    }
+
+    HasFever.innerHTML += `
+    <div style="color:${style}"> ${Res.SensorData.MessageData.HasFever} </div>
+        `;
+    // Frame Person detected
+    HasMask.innerHTML = '';
+    HasMask.innerHTML += `
+        ${Res.SensorData.MessageData.HasMask}
+        `;
+    // Frame Person detected
+    Temperature.innerHTML = '';
+    
+    Temperature.innerHTML += `
+        ${Res.SensorData.MessageData.Temperature.toFixed(2)}
+        `;
+    // Frame Person detected
+    TrackId.innerHTML = '';
+    TrackId.innerHTML += `
+        ${Res.SensorData.MessageData.TrackId}
+        `;
+    // Frame Person detected
+    MessageTime.innerHTML = '';
+    MessageTime.innerHTML += `
+        ${Res.SensorData.MessageTime}
+        `;
+    })}
+    
+    </script>
+</html>
